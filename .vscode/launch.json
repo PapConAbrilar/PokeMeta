@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "pokemeta",
+            "cwd": "pokemeta",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "pokemeta (profile mode)",
+            "cwd": "pokemeta",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "pokemeta (release mode)",
+            "cwd": "pokemeta",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

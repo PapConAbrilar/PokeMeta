@@ -2,15 +2,14 @@
 
 ## Propósito
 
-Aplicación Flutter para jugadores competitivos de Pokémon TCG. El README de la raíz, [`README.md`](./README.md), describe el objetivo del producto y nueve requisitos de la asignatura. Este archivo deja constancia del estado revisado y del alcance para retomar el trabajo en otra sesión.
+Aplicación Flutter para jugadores competitivos de Pokémon TCG. El README de la raíz, [`README.md`](./README.md), describe el objetivo del producto y los nueve requisitos de la asignatura. Este archivo deja constancia del estado del proyecto, del reparto de trabajo y de los puntos donde el frontend espera la integración del backend, para retomar el trabajo en otra sesión.
 
-## Alcance acordado para la sesión actual
+## Reparto del trabajo
 
-- Trabajar únicamente en el frontend y revisar qué requisitos del README están cubiertos por la implementación actual.
-- No implementar animaciones ni widgets reutilizables propios de los requisitos 4 y 8.
-- No implementar autenticación, APIs, Supabase, persistencia, estado global ni otras partes fuera del frontend.
-- Las pantallas pueden usar los widgets estándar de Flutter; la exclusión de “widgets” se refiere a no desarrollar los componentes reutilizables solicitados por el requisito 8.
-- La interfaz existente es una estructura funcional básica con contenido de ejemplo; no representa una integración de datos ni una implementación final del diseño de referencia.
+- **Frontend (Flutter):** pantallas (salvo acceso y perfil), navegación, paso de parámetros, animaciones, formulario validado, widgets reutilizables y estado global con Provider.
+- **Backend, APIs y pantallas de acceso y perfil (compañero):** autenticación con Supabase, tabla de mazos con RLS, consumo de las APIs externas, los servicios que entregan los datos y las pantallas `login_screen.dart`, `profile_screen.dart` y `trainer_details_screen.dart`.
+
+El frontend usa hoy datos de ejemplo locales. Los puntos donde deben conectarse los datos reales están descritos en la sección “Guía de integración para backend”; los de mazos además llevan comentarios `INTEGRACIÓN` en el código.
 
 ## Estructura actual
 
@@ -21,59 +20,148 @@ pokemeta/lib/
 ├── main.dart
 ├── models/
 │   ├── card_model.dart
-│   └── deck_model.dart
+│   ├── deck_model.dart
+│   └── tournament_model.dart
+├── providers/
+│   ├── active_deck_provider.dart
+│   └── decks_provider.dart
+├── widgets/
+│   ├── active_deck_banner.dart
+│   ├── card_image.dart
+│   ├── custom_stat_row.dart
+│   ├── pokemon_card_tile.dart
+│   ├── stat_badge_widget.dart
+│   └── tournament_row_card.dart
 └── presentation/screens/
     ├── login/login_screen.dart
     ├── main_navigation_screen.dart
     ├── home/home_screen.dart
-    ├── cards/
-    │   └── card_detail_screen.dart
+    ├── cards/card_detail_screen.dart
     ├── decks/
+    │   ├── active_deck_screen.dart
+    │   ├── card_picker_screen.dart
     │   ├── decks_screen.dart
-    │   └── deck_detail_screen.dart
+    │   ├── deck_detail_screen.dart
+    │   └── deck_form_screen.dart
+    ├── tournaments/tournament_detail_screen.dart
     └── profile/
         ├── profile_screen.dart
         └── trainer_details_screen.dart
 ```
 
-- `main.dart`: inicia `PokeMetaApp` y muestra `LoginScreen`.
-- `login/login_screen.dart`: campos de correo y contraseña, opción “Recordarme” y botones de acceso/registro. El acceso navega a la app sin autenticar ni validar credenciales; registro y recuperación no tienen acción implementada.
-- `main_navigation_screen.dart`: navegación inferior entre Inicio, Mazos y Perfil. Conserva las pestañas con `IndexedStack`; Cartas ya no es una pestaña.
-- `home/home_screen.dart`: resumen y selector entre torneos/cartas. La sección Cartas contiene búsqueda, filtros sin acción y la grilla seleccionable del catálogo de ejemplo.
-- `cards/card_detail_screen.dart`: pantalla de detalle que recibe un `CardModel` por constructor; muestra información de ejemplo, espacio de imagen y acciones visuales sin integración.
-- `decks/decks_screen.dart`: lista de mazos estáticos seleccionables.
-- `decks/deck_detail_screen.dart`: detalle del mazo con formato, resumen y cartas; cada entrada muestra nombre, tipo elemental, expansión y cantidad.
-- `profile/profile_screen.dart`: perfil de ejemplo; “Datos del entrenador” abre sus estadísticas y “Cerrar sesión” vuelve a la pantalla de acceso y limpia la pila de navegación. No hay autenticación real.
-- `profile/trainer_details_screen.dart`: muestra mazo más utilizado y carta favorita como ejemplos enlazados a sus respectivas pantallas de detalle.
-- `models/card_model.dart`: modelo y catálogo local de ejemplo.
-- `models/deck_model.dart`: modelo del mazo y contenido local estático de muestra.
+### Qué hace cada archivo
 
-Las pantallas usan el tema estándar de Material (`ThemeData()`); no se configuró una paleta ni se integraron recursos gráficos. `pubspec.yaml` aún no declara Supabase, Provider ni cliente HTTP.
+- `main.dart`: inicia `PokeMetaApp` y muestra `LoginScreen`. Usa el tema estándar de Material (`ThemeData()`); aún no hay paleta propia.
+- `login/login_screen.dart`: campos de correo y contraseña, “Recordarme” y botones de acceso/registro. El acceso navega a la app **sin autenticar ni validar**; registro y recuperación no tienen acción.
+- `main_navigation_screen.dart`: navegación inferior entre Inicio, Mazos y Perfil. Conserva las pestañas con `IndexedStack`.
+- `home/home_screen.dart`: resumen y selector Torneos/Cartas. Torneos lista `sampleTournaments` y abre `TournamentDetailScreen`. Cartas tiene búsqueda y filtros sin acción, y una grilla de `PokemonCardTile` que abre `CardDetailScreen`.
+- `cards/card_detail_screen.dart`: detalle de carta (recibe `CardModel` por constructor). Es `StatefulWidget`: guarda si la carta es favorita **solo en memoria** y la anima con `AnimatedContainer` y `AnimatedScale`. “Agregar al mazo activo” usa `ActiveDeckProvider`.
+- `decks/decks_screen.dart`: lista de mazos guardados, leída de `DecksProvider`. “Nuevo mazo” y “Editar datos” abren `DeckFormScreen` y reciben el resultado con `await Navigator.push`. “Eliminar” no tiene acción.
+- `decks/active_deck_screen.dart`: editor del borrador (ver cartas, ajustar copias, agregar, guardar o descartar). Un mazo nuevo pide nombre, formato y descripción con `DeckFormScreen` al guardar.
+- `decks/card_picker_screen.dart`: selector con búsqueda para agregar cartas al borrador (recibe `cards` por constructor).
+- `decks/deck_form_screen.dart`: formulario de crear/editar mazo con `Form`, `TextFormField` y `validator`. Devuelve un `DeckModel` con `Navigator.pop`.
+- `decks/deck_detail_screen.dart`: detalle del mazo. “Editar datos” abre el formulario; “Editar cartas” carga el mazo como borrador en `ActiveDeckProvider` y abre `ActiveDeckScreen`. Cada carta abre su detalle.
+- `tournaments/tournament_detail_screen.dart`: detalle de torneo (recibe `TournamentModel` por constructor). La sección “Clasificación” es un estado vacío a la espera de datos.
+- `profile/profile_screen.dart`: perfil de ejemplo. “Datos del entrenador” abre sus estadísticas y “Cerrar sesión” vuelve al acceso limpiando la pila de navegación. No hay autenticación real.
+- `profile/trainer_details_screen.dart`: mazo más utilizado y carta favorita como ejemplos enlazados a sus detalles.
+- `widgets/`: componentes reutilizables (requisito 8). `CardImage` incluye el `Hero` de la carta.
 
-## Revisión de los requisitos del README
+## Estado de los requisitos del README
 
-| # | Requisito | Estado observado |
+| # | Requisito | Estado | Responsable |
+|---|---|---|---|
+| 1 | Login y autenticación Supabase | **Pendiente.** Hay pantalla de acceso, sin autenticación real. | Backend |
+| 2 | Consumo de API con `FutureBuilder` | **Pendiente.** Todos los datos son de ejemplo. | Backend (servicios) + Frontend (`FutureBuilder`, carga y error) |
+| 3 | Navegación a detalle pasando parámetros | **Cubierto.** Carta (desde grilla y desde mazo), mazo y torneo reciben su modelo por el constructor. | Frontend |
+| 4 | Animaciones `Hero` e implícitas | **Cubierto.** `Hero` en la imagen de carta (grilla, mazo y detalle) y `AnimatedScale` + `AnimatedContainer` en la estrella de favorita. | Frontend |
+| 5 | CRUD de mazos con Supabase y RLS | **Pendiente.** La lista es local y se pierde al reiniciar. | Backend |
+| 6 | Formulario con validación | **Cubierto en el frontend** (`DeckFormScreen`). Falta conectar con la persistencia. | Frontend |
+| 7 | Estado global con Provider | **Cubierto.** `ActiveDeckProvider` (borrador del mazo que se arma o edita) y `DecksProvider` (mazos guardados) comparten estado entre Inicio, detalle de carta, lista y detalle de mazo, y el editor de mazo activo. Viven solo en memoria. | Frontend |
+| 8 | Widgets propios reutilizables | **Cubierto.** Seis widgets en `lib/widgets/`. | Frontend |
+| 9 | Flujo colaborativo en GitHub | **No evaluado.** Es de historial y colaboración. | Todos |
+
+## Guía de integración para backend
+
+### 1. Contratos de los modelos
+
+Los modelos están en `lib/models/`. Todos son inmutables (campos `final`, constructor `const`). Falta agregarles `fromJson` (y `toJson` en los que se envían) cuando se conozca la forma de las respuestas.
+
+**`TournamentModel`**
+
+| Campo | Tipo | Notas |
 |---|---|---|
-| 1 | Login y autenticación Supabase | **No implementado.** Hay una pantalla de acceso, pero no hay autenticación, registro ni cierre de sesión conectados a Supabase. |
-| 2 | Consumo de API con `FutureBuilder` | **No implementado.** Torneos, cartas y estadísticas son datos estáticos/de ejemplo; no hay llamadas a APIs ni `FutureBuilder`. |
-| 3 | Navegación a detalle pasando parámetros | **Parcial, actualizado.** La sección Cartas de Inicio abre detalles pasando `CardModel`; la lista de Mazos abre detalles pasando `DeckModel`. Falta la pantalla de detalle de torneo y el paso de su modelo. |
-| 4 | Animaciones `Hero` e implícitas | **Pendiente y fuera del alcance acordado.** No se implementaron y no deben añadirse en esta etapa. |
-| 5 | CRUD de mazos con Supabase y RLS | **No implementado.** El listado es estático; no hay persistencia, CRUD ni políticas configuradas. |
-| 6 | Formulario de mazos con validación | **No implementado.** El formulario de acceso no es el formulario de creación/edición de mazos requerido; el botón “Nuevo mazo” no tiene acción. |
-| 7 | Estado global con Provider | **No implementado.** No hay `Provider`, `ChangeNotifier` ni estado compartido del mazo. |
-| 8 | Widgets propios reutilizables | **Pendiente y fuera del alcance acordado.** No se creó el conjunto de componentes reutilizables requerido en `lib/widgets/`. |
-| 9 | Flujo colaborativo en GitHub | **No evaluado en esta revisión.** Es un requisito de historial/colaboración, no de interfaz. |
+| `name` | `String` | |
+| `city` | `String` | |
+| `date` | `String` | Hoy texto ya formateado (“18 de abril”). Si la API entrega fecha, convertir antes de crear el modelo o cambiar el tipo a `DateTime` y formatear en los widgets. |
+| `winningDeck` | `String` | |
+| `players` | `int` | |
 
-**Conclusión:** el frontend actual cubre la estructura inicial de acceso, contenido y navegación, pero no se puede afirmar que el proyecto cumpla los nueve requisitos del README. Los requisitos de backend/datos/estado están pendientes; animaciones y widgets reutilizables se excluyeron expresamente de la etapa actual.
+**`CardModel`**: `name`, `expansion`, `rarity`, `cardNumber`, `hp` (`int`), `type`, `ability`, `attack`, `attackDamage`, `attackDescription`, `retreatCost` (`int`), `weakness`, `resistance`, `regulationMark` (todos `String` salvo los indicados).
+
+- `cardNumber` se usa como etiqueta del `Hero`, así que **debe ser único** por carta.
+- No existe aún un campo de imagen. Hay que agregar `imageUrl` a `CardModel` y mostrarla en `widgets/card_image.dart`, que es el único lugar donde se dibuja la imagen (hoy muestra un ícono de reemplazo).
+- `copiesInActiveDeck` se eliminó de `CardModel`: las copias en el mazo activo las lleva `ActiveDeckProvider`.
+
+**`DeckModel`**
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `name` | `String` | Validado en el formulario: 3 a 30 caracteres. |
+| `format` | `String` | Hoy solo `Estándar` o `Expandido`. |
+| `description` | `String` | Validada en el formulario: 10 a 200 caracteres. |
+| `cards` | `List<DeckCardEntry>` | Cada entrada es una carta (`CardModel`) y una cantidad (`count`). |
+
+`cardCount` es un getter calculado (suma de cantidades). No se guarda.
+
+Propuesta de tabla (a confirmar con el backend): `decks` con `id`, `user_id` (por defecto `auth.uid()`), `name`, `format`, `description`, `created_at`, y una tabla de relación (por ejemplo `deck_cards` con `deck_id`, `card_id` y `count`) o una columna `jsonb` para las cartas. RLS: cada usuario solo puede leer, crear, actualizar y eliminar filas con su `user_id`. Conviene reflejar en la base las mismas reglas de longitud y los formatos válidos que valida el formulario.
+
+### 2. Datos de ejemplo a reemplazar
+
+| Dato de ejemplo | Dónde se usa |
+|---|---|
+| `sampleCards` (`card_model.dart`) | Grilla de cartas en `home_screen.dart` |
+| `sampleDecks` (`deck_model.dart`) | `_decks` en `providers/decks_provider.dart` |
+| `sampleTournaments` (`tournament_model.dart`) | Lista de torneos en `home_screen.dart` |
+
+Al conectar los datos reales habrá que agregar estados de **carga**, **error** y **lista vacía** en esas pantallas. Se recomienda que los servicios (`lib/services/`) devuelvan `Future<List<Modelo>>` para usarlos directamente en un `FutureBuilder`.
+
+### 3. Puntos de conexión en el código
+
+Los puntos de mazos llevan comentarios `INTEGRACIÓN` en el código. Los de login, perfil y `main.dart` no llevan comentario:
+
+- `providers/decks_provider.dart`: **punto único de integración de mazos.** `_decks` se reemplaza por los mazos de Supabase; `add` y `replace` deben llamar a crear y actualizar. Falta `delete`. Desde la UI todo pasa por este provider (lista, formulario, detalle y editor de cartas).
+- `decks_screen.dart`, menú ⋮: “Eliminar” no tiene acción (falta confirmación y borrado).
+- `card_picker_screen.dart`: hoy usa `sampleCards`; pasar aquí la colección del usuario cuando exista.
+- `login_screen.dart`: reemplazar la navegación directa por `signIn` y `signUp` de `supabase_flutter`, validando credenciales y mostrando errores.
+- `profile_screen.dart`: “Cerrar sesión” debe llamar a `signOut` y limpiar el estado: `context.read<ActiveDeckProvider>().discard()` y recargar `DecksProvider`, para que el siguiente usuario no vea datos del anterior.
+- `main.dart`: inicializar Supabase antes de `runApp`.
+
+### 4. Dependencias pendientes en `pubspec.yaml`
+
+Hoy están `flutter`, `cupertino_icons` y `provider`. Faltan `supabase_flutter` y `http`. No guardar claves ni URLs de Supabase en el repositorio; usar `--dart-define` o un archivo de configuración ignorado por Git.
+
+### 5. Datos que hoy solo viven en memoria
+
+- Favoritas: el estado vive en `CardDetailScreen` y se pierde al salir de la pantalla.
+- Mazo activo (borrador): `ActiveDeckProvider` guarda en memoria el mazo que se arma o edita (máximo 60 cartas y 4 copias por carta). Al guardar, el resultado pasa a `DecksProvider`, que es donde se persiste. Un mazo guardado no cambia hasta pulsar “Guardar cambios”.
+- Datos del entrenador y torneos de ejemplo del perfil.
+- Clasificación del torneo: pantalla de detalle con estado vacío.
 
 ## Verificación registrada
 
-`flutter analyze` no reporta problemas y `flutter test` pasa la prueba que recorre el acceso, la navegación por pestañas, los detalles de carta y mazo, los datos del entrenador y el cierre de sesión hacia el acceso. Esta verificación confirma la navegación frontend, no el cumplimiento de los requisitos de integración.
+El desarrollador ejecutó la app con `flutter run` (Chrome) y comprobó manualmente la navegación, las animaciones y el formulario. `flutter analyze` no reportó problemas tras agregar el Provider. **Falta registrar** `flutter test` y volver a ejecutar `flutter analyze` tras los últimos cambios. La prueba existente recorre el acceso, las pestañas, los detalles y el cierre de sesión, y puede necesitar ajustes por las pantallas nuevas.
 
 ## Punto de continuación
 
-Antes de continuar, confirmar con el usuario el alcance de la próxima etapa. Mantener separados:
+1. **Frontend:** definir tema y paleta propios; implementar “Eliminar” mazo; completar búsqueda, filtros y “Agregar al mazo activo”.
+2. **Backend (compañero):** autenticación y pantallas de acceso y perfil, tabla de mazos con RLS, servicios de API y `fromJson` de los modelos.
+3. **Coordinación:** acordar los campos de los modelos antes de conectar, y quién escribe cada `FutureBuilder`.
 
-1. **Frontend:** completar y refinar pantallas, estados vacíos y navegación de detalle, respetando cualquier exclusión vigente sobre animaciones y componentes reutilizables.
-2. **Integraciones y requisitos de la asignatura:** autenticación Supabase, APIs, modelos, CRUD/RLS, formularios validados y estado global; no darlos por implementados por la presencia de controles de ejemplo.
-3. **Requisitos explícitamente diferidos:** resolver con el usuario cuándo abordar animaciones y widgets reutilizables.
+## Pendientes y notas de sesión
+
+- **Decisión de diseño:** el mazo activo es el borrador del mazo que se arma o edita (`ActiveDeckProvider`); los mazos guardados viven en `DecksProvider`. Se descartó la alternativa de editar cada mazo guardado por separado.
+- **Contexto de aprendizaje:** es el primer proyecto Flutter del desarrollador frontend, que debe poder defender y explicar todo el código. Cada parte se trabajó con concepto, código y preguntas de defensa (estas últimas solo quedaron en el chat).
+- **Sin verificar:** `login_screen.dart`, `profile_screen.dart` y `trainer_details_screen.dart` quedan a cargo del compañero y no se revisaron en la sesión de frontend. `flutter test` puede fallar: la app ahora necesita `MultiProvider` en `main.dart`, y el test debe envolver la app con los mismos providers.
+- **Entorno:** SDK de Flutter en `C:\Users\sebal\flutter` (ya en el PATH). El repositorio está en OneDrive, que puede bloquear archivos temporales. El Android toolchain no está instalado; se prueba en Chrome.
+- **Git:** rama `feature/widgets-reutilizables` con commits locales; el `push` queda pendiente para el final de la sesión.
+- **Pendiente de producto:** eliminar mazo, búsqueda y filtros de Inicio, tema y paleta propios, colección del usuario (hoy el selector usa todo el catálogo) y persistencia de favoritas.
