@@ -108,6 +108,27 @@ class CardModel {
       imageUrl: imgUrl,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'expansion': expansion,
+      'rarity': rarity,
+      'cardNumber': cardNumber,
+      'hp': hp,
+      'type': type,
+      'ability': ability,
+      'attack': attack,
+      'attackDamage': attackDamage,
+      'attackDescription': attackDescription,
+      'retreatCost': retreatCost,
+      'weakness': weakness,
+      'resistance': resistance,
+      'regulationMark': regulationMark,
+      'imageUrl': imageUrl,
+      'copiesInActiveDeck': copiesInActiveDeck,
+    };
+  }
 }
 
 const sampleCards = [
