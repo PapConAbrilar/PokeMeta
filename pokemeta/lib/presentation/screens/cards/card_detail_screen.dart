@@ -19,12 +19,21 @@ class CardDetailScreen extends StatefulWidget {
 class _CardDetailScreenState extends State<CardDetailScreen> {
   bool _isFavorite = false;
   double _starScale = 1.0;
+  double _addButtonScale = 1.0;
 
   void _toggleFavorite() {
     setState(() {
       _isFavorite = !_isFavorite;
       // Al subir la escala a 1.4, AnimatedScale anima el "latido".
       _starScale = 1.4;
+    });
+  }
+
+  void _addToDeck(CardModel card) {
+    context.read<ActiveDeckProvider>().add(card);
+    setState(() {
+      // Pulso visual al agregar una carta al mazo activo.
+      _addButtonScale = 1.06;
     });
   }
 
@@ -172,19 +181,35 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('En el mazo activo'),
-                Text('$copies ${copies == 1 ? 'copia' : 'copias'}'),
+                // AnimatedSwitcher: anima el cambio de número al sumar copias.
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  transitionBuilder: (child, animation) =>
+                      ScaleTransition(scale: animation, child: child),
+                  child: Text(
+                    '$copies ${copies == 1 ? 'copia' : 'copias'}',
+                    key: ValueKey<int>(copies),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
               ],
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: FilledButton.icon(
-                // read: solo ejecuta una acción, no necesita observar.
-                onPressed: canAdd
-                    ? () => context.read<ActiveDeckProvider>().add(card)
-                    : null,
-                icon: const Icon(Icons.add),
-                label: Text(
-                  canAdd ? 'Agregar al mazo activo' : 'Límite alcanzado',
+              child: AnimatedScale(
+                scale: _addButtonScale,
+                duration: const Duration(milliseconds: 140),
+                onEnd: () {
+                  if (_addButtonScale != 1.0) {
+                    setState(() => _addButtonScale = 1.0);
+                  }
+                },
+                child: FilledButton.icon(
+                  onPressed: canAdd ? () => _addToDeck(card) : null,
+                  icon: Icon(canAdd ? Icons.add : Icons.check_circle_outline),
+                  label: Text(
+                    canAdd ? 'Agregar al mazo activo' : 'Límite alcanzado',
+                  ),
                 ),
               ),
             ),

@@ -25,6 +25,15 @@ class CardImage extends StatelessWidget {
             ? Image.network(
                 card.imageUrl!,
                 fit: BoxFit.contain,
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded) return child;
+                  return AnimatedOpacity(
+                    opacity: frame == null ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 280),
+                    curve: Curves.easeOut,
+                    child: child,
+                  );
+                },
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return _placeholder(
