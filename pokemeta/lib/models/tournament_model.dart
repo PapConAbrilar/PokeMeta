@@ -13,6 +13,18 @@ class TournamentModel {
   final String date;
   final String winningDeck;
   final int players;
+
+  factory TournamentModel.fromJson(Map<String, dynamic> json) {
+    return TournamentModel(
+      name: json['name']?.toString() ?? 'Torneo competitivo',
+      city: json['city']?.toString() ?? 'Internacional',
+      date: json['date']?.toString() ?? 'Reciente',
+      winningDeck: json['winningDeck']?.toString() ?? 'Desconocido',
+      players: json['players'] is int
+          ? json['players']
+          : (int.tryParse(json['players']?.toString() ?? '') ?? 0),
+    );
+  }
 }
 
 /// Datos de ejemplo. Más adelante se reemplazan por los de la API.

@@ -71,7 +71,7 @@ pokemeta/lib/
 | # | Requisito | Estado | Responsable |
 |---|---|---|---|
 | 1 | Login y autenticación Supabase | **Pendiente.** Hay pantalla de acceso, sin autenticación real. | Backend |
-| 2 | Consumo de API con `FutureBuilder` | **Pendiente.** Todos los datos son de ejemplo. | Backend (servicios) + Frontend (`FutureBuilder`, carga y error) |
+| 2 | Consumo de API con `FutureBuilder` | **Cubierto.** Conexión asíncrona a la API REST de TCGdex (catálogo con imágenes de alta resolución, búsqueda y filtros por tipo) y servicio de torneos. `FutureBuilder` con estados de carga, error con reintento y datos vacíos implementado en `home_screen.dart`. | Benjamín (Backend / API REST) |
 | 3 | Navegación a detalle pasando parámetros | **Cubierto.** Carta (desde grilla y desde mazo), mazo y torneo reciben su modelo por el constructor. | Frontend |
 | 4 | Animaciones `Hero` e implícitas | **Cubierto.** `Hero` en la imagen de carta (grilla, mazo y detalle) y `AnimatedScale` + `AnimatedContainer` en la estrella de favorita. | Frontend |
 | 5 | CRUD de mazos con Supabase y RLS | **Pendiente.** La lista es local y se pierde al reiniciar. | Backend |
