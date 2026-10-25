@@ -10,6 +10,8 @@ class TournamentDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final standings = tournament.standings;
+
     return Scaffold(
       appBar: AppBar(title: Text(tournament.name)),
       body: ListView(
@@ -30,7 +32,7 @@ class TournamentDetailScreen extends StatelessWidget {
               children: [
                 CustomStatRow(
                   icon: Icons.location_on_outlined,
-                  label: 'Ciudad',
+                  label: 'Modalidad / Sede',
                   value: tournament.city,
                 ),
                 const Divider(height: 1),
@@ -55,18 +57,54 @@ class TournamentDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text('Clasificación', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.leaderboard_outlined),
-              title: Text('Sin posiciones por ahora'),
-              subtitle: Text(
-                'Las posiciones del torneo aparecerán aquí cuando estén '
-                'disponibles.',
-              ),
-            ),
+          Text(
+            'Clasificación (Top 8)',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
+          const SizedBox(height: 8),
+          if (standings.isEmpty)
+            const Card(
+              child: ListTile(
+                leading: Icon(Icons.leaderboard_outlined),
+                title: Text('Sin posiciones por ahora'),
+                subtitle: Text(
+                  'Las posiciones del torneo aparecerán aquí cuando finalicen '
+                  'las rondas en Limitless TCG.',
+                ),
+              ),
+            )
+          else
+            for (final entry in standings)
+              Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: entry.placing == 1
+                        ? Colors.amber.withValues(alpha: 0.25)
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Text(
+                      '#${entry.placing}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: entry.placing == 1
+                            ? Colors.amber.shade900
+                            : null,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    entry.country.isNotEmpty
+                        ? '${entry.playerName} (${entry.country})'
+                        : entry.playerName,
+                  ),
+                  subtitle: Text(entry.deckName),
+                  trailing: entry.record.isNotEmpty
+                      ? Chip(
+                          label: Text(entry.record),
+                          visualDensity: VisualDensity.compact,
+                        )
+                      : null,
+                ),
+              ),
         ],
       ),
     );
