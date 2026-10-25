@@ -28,12 +28,12 @@ Este repositorio ha sido estructurado para cumplir con los 9 criterios de evalua
 
 | # | Requisito | Estado |
 |---|---|---|
-| 1 | Login con Supabase | Pendiente (hay pantalla, sin autenticación real) |
+| 1 | Login con Supabase | Implementado (SignUp, SignIn, SignOut y persistencia de sesión con Supabase Auth) |
 | 2 | Datos de la API con `FutureBuilder` | Implementado (TCGdex API en español, imágenes reales, búsqueda y filtros) |
 | 3 | Navegación con paso de parámetros | Implementado |
 | 4 | Animaciones (`Hero` e implícitas) | Implementado |
-| 5 | Tabla en Supabase con RLS (CRUD) | Pendiente |
-| 6 | Formulario con validación | Implementado (falta conectar la persistencia) |
+| 5 | Tabla en Supabase con RLS (CRUD) | Implementado (Tabla decks en PostgreSQL con políticas RLS para lectura, creación, edición y borrado) |
+| 6 | Formulario con validación | Implementado (Conectado con persistencia en Supabase) |
 | 7 | Estado global con Provider | Implementado (en memoria) |
 | 8 | Widgets propios reutilizables | Implementado |
 | 9 | Flujo colaborativo en GitHub | En curso |

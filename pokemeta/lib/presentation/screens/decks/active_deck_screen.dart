@@ -22,12 +22,13 @@ class ActiveDeckScreen extends StatelessWidget {
     if (source != null) {
       // Mazo existente: se conservan sus datos y se actualizan las cartas.
       saved = DeckModel(
+        id: source.id,
         name: source.name,
         format: source.format,
         description: source.description,
         cards: active.entries,
       );
-      decks.replace(source, saved);
+      await decks.replace(source, saved);
     } else {
       // Mazo nuevo: primero se piden nombre, formato y descripción.
       final info = await navigator.push<DeckModel>(
@@ -42,7 +43,7 @@ class ActiveDeckScreen extends StatelessWidget {
         description: info.description,
         cards: active.entries,
       );
-      decks.add(saved);
+      await decks.add(saved);
     }
 
     active.discard();

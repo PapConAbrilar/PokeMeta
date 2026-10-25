@@ -80,6 +80,7 @@ class _DeckFormScreenState extends State<DeckFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final result = DeckModel(
+      id: widget.deck?.id,
       name: _nameController.text.trim(),
       format: _format!,
       description: _descriptionController.text.trim(),

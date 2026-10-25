@@ -70,12 +70,12 @@ pokemeta/lib/
 
 | # | Requisito | Estado | Responsable |
 |---|---|---|---|
-| 1 | Login y autenticación Supabase | **Pendiente.** Hay pantalla de acceso, sin autenticación real. | Backend |
+| 1 | Login y autenticación Supabase | **Cubierto.** Autenticación real implementada con `supabase_flutter` (`signInWithPassword`, `signUp` y `signOut`). Persistencia de sesión y cierre de sesión sincronizado con limpieza de estado. | Benjamín (Backend / Supabase) |
 | 2 | Consumo de API con `FutureBuilder` | **Cubierto.** Conexión asíncrona a la API REST de TCGdex (catálogo con imágenes de alta resolución, búsqueda y filtros por tipo) y servicio de torneos. `FutureBuilder` con estados de carga, error con reintento y datos vacíos implementado en `home_screen.dart`. | Benjamín (Backend / API REST) |
 | 3 | Navegación a detalle pasando parámetros | **Cubierto.** Carta (desde grilla y desde mazo), mazo y torneo reciben su modelo por el constructor. | Frontend |
 | 4 | Animaciones `Hero` e implícitas | **Cubierto.** `Hero` en la imagen de carta (grilla, mazo y detalle) y `AnimatedScale` + `AnimatedContainer` en la estrella de favorita. | Frontend |
-| 5 | CRUD de mazos con Supabase y RLS | **Pendiente.** La lista es local y se pierde al reiniciar. | Backend |
-| 6 | Formulario con validación | **Cubierto en el frontend** (`DeckFormScreen`). Falta conectar con la persistencia. | Frontend |
+| 5 | CRUD de mazos con Supabase y RLS | **Cubierto.** `DecksProvider` sincronizado con la tabla `decks` en PostgreSQL. Operaciones de crear, listar, actualizar y eliminar mazos bajo políticas RLS por usuario (`auth.uid() = user_id`). | Benjamín (Backend / Supabase) |
+| 6 | Formulario con validación | **Cubierto.** `DeckFormScreen` con validaciones de longitud y formato conectado directamente a la persistencia en Supabase. | Frontend + Benjamín |
 | 7 | Estado global con Provider | **Cubierto.** `ActiveDeckProvider` (borrador del mazo que se arma o edita) y `DecksProvider` (mazos guardados) comparten estado entre Inicio, detalle de carta, lista y detalle de mazo, y el editor de mazo activo. Viven solo en memoria. | Frontend |
 | 8 | Widgets propios reutilizables | **Cubierto.** Seis widgets en `lib/widgets/`. | Frontend |
 | 9 | Flujo colaborativo en GitHub | **No evaluado.** Es de historial y colaboración. | Todos |

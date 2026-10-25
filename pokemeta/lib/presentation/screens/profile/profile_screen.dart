@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:pokemeta/presentation/screens/login/login_screen.dart';
 import 'package:pokemeta/presentation/screens/profile/trainer_details_screen.dart';
+import 'package:pokemeta/providers/active_deck_provider.dart';
+import 'package:pokemeta/providers/decks_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final decksProvider = context.watch<DecksProvider>();
+    User? currentUser;
+    try {
+      currentUser = Supabase.instance.client.auth.currentUser;
+    } catch (_) {
+      currentUser = null;
+    }
+
+    final userEmail = currentUser?.email ?? 'entrenador@pokemeta.com';
+    final savedDecksCount = decksProvider.decks.length;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -18,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.labelLarge,
           ),
           subtitle: Text(
-            'Alex Morgan\nUltra League · #1.284',
+            '$userEmail\nUltra League · #1.284',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           isThreeLine: true,
@@ -29,15 +44,15 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        const Card(
+        Card(
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _ProfileStat(value: '3', label: 'Mazos guardados'),
-                _ProfileStat(value: '24', label: 'Victorias'),
-                _ProfileStat(value: '68%', label: 'Porcentaje'),
+                _ProfileStat(value: '$savedDecksCount', label: 'Mazos guardados'),
+                const _ProfileStat(value: '24', label: 'Victorias'),
+                const _ProfileStat(value: '68%', label: 'Porcentaje'),
               ],
             ),
           ),
@@ -45,9 +60,9 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 24),
         Text('Cuenta', style: Theme.of(context).textTheme.titleLarge),
         ListTile(
-          leading: Icon(Icons.person_outline),
-          title: Text('Datos del entrenador'),
-          trailing: Icon(Icons.chevron_right),
+          leading: const Icon(Icons.person_outline),
+          title: const Text('Datos del entrenador'),
+          trailing: const Icon(Icons.chevron_right),
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -57,16 +72,26 @@ class ProfileScreen extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: Icon(Icons.logout),
-          title: Text('Cerrar sesión'),
-          trailing: Icon(Icons.chevron_right),
-          onTap: () {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute<void>(
-                builder: (context) => const LoginScreen(),
-              ),
-              (route) => false,
-            );
+          leading: const Icon(Icons.logout),
+          title: const Text('Cerrar sesión'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () async {
+            // Requisito 1: Cierre de sesión en Supabase y limpieza de estado global
+            try {
+              await Supabase.instance.client.auth.signOut();
+            } catch (_) {}
+
+            if (context.mounted) {
+              context.read<ActiveDeckProvider>().discard();
+              context.read<DecksProvider>().clear();
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute<void>(
+                  builder: (context) => const LoginScreen(),
+                ),
+                (route) => false,
+              );
+            }
           },
         ),
       ],
