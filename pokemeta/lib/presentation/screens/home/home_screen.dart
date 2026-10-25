@@ -149,14 +149,27 @@ class _HomeScreenState extends State<HomeScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Padding(
                 padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('Consultando torneos en Limitless TCG...'),
+                    ],
+                  ),
+                ),
               );
             }
 
             if (snapshot.hasError) {
               return _buildErrorState(
-                message: 'No se pudieron cargar los torneos.',
+                message: 'No se pudieron cargar los torneos desde Limitless TCG.',
                 onRetry: _reloadTournaments,
+                onFallback: () {
+                  setState(() {
+                    _tournamentsFuture = Future.value(sampleTournaments);
+                  });
+                },
               );
             }
 

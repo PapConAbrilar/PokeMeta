@@ -66,21 +66,49 @@ class PokemonTcgService {
       final detailedCards = await Future.wait(
         candidates.map((item) async {
           try {
-            return await fetchCardDetails(item['id'].toString());
+            final detail = await fetchCardDetails(item['id'].toString());
+            // Si el detalle no trajo imagen pero la lista sí, preservamos la imagen
+            if ((detail.imageUrl == null || detail.imageUrl!.isEmpty) && item['image'] != null) {
+              final raw = item['image'].toString();
+              final fallbackImg = raw.endsWith('.webp') ? raw : '$raw/high.webp';
+              return CardModel(
+                name: detail.name,
+                expansion: detail.expansion,
+                rarity: detail.rarity,
+                cardNumber: detail.cardNumber,
+                hp: detail.hp,
+                type: detail.type,
+                ability: detail.ability,
+                attack: detail.attack,
+                attackDamage: detail.attackDamage,
+                attackDescription: detail.attackDescription,
+                retreatCost: detail.retreatCost,
+                weakness: detail.weakness,
+                resistance: detail.resistance,
+                regulationMark: detail.regulationMark,
+                imageUrl: fallbackImg,
+              );
+            }
+            return detail;
           } catch (_) {
             return CardModel.fromJson(item);
           }
         }),
       );
 
+      // Descartamos cartas que no tengan imagen para que en la grilla siempre se vean ilustraciones
+      final withImages = detailedCards
+          .where((c) => c.imageUrl != null && c.imageUrl!.isNotEmpty)
+          .toList();
+
       // Filtrado por tipo elemental
       if (type != null && type.isNotEmpty && type != 'Todas') {
-        return detailedCards
+        return withImages
             .where((c) => c.type.toLowerCase() == type.toLowerCase())
             .toList();
       }
 
-      return detailedCards;
+      return withImages.isNotEmpty ? withImages : detailedCards;
     } catch (e) {
       // Relanza para que el FutureBuilder capture el error en snapshot.hasError
       rethrow;
