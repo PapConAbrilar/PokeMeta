@@ -19,15 +19,42 @@ class CardImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Hero(
       tag: 'card-image-${card.cardNumber}',
-      child: Container(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        alignment: Alignment.center,
-        child: Icon(
-          Icons.image_outlined,
-          size: iconSize,
-          semanticLabel: 'Imagen de ${card.name} no disponible',
-        ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: card.imageUrl != null && card.imageUrl!.isNotEmpty
+            ? Image.network(
+                card.imageUrl!,
+                fit: BoxFit.contain,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return _placeholder(
+                    context,
+                    child: const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return _placeholder(context);
+                },
+              )
+            : _placeholder(context),
       ),
+    );
+  }
+
+  Widget _placeholder(BuildContext context, {Widget? child}) {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      alignment: Alignment.center,
+      child: child ??
+          Icon(
+            Icons.image_outlined,
+            size: iconSize,
+            semanticLabel: 'Imagen de ${card.name} no disponible',
+          ),
     );
   }
 }

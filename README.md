@@ -29,7 +29,7 @@ Este repositorio ha sido estructurado para cumplir con los 9 criterios de evalua
 | # | Requisito | Estado |
 |---|---|---|
 | 1 | Login con Supabase | Pendiente (hay pantalla, sin autenticación real) |
-| 2 | Datos de la API con `FutureBuilder` | Pendiente (datos de ejemplo) |
+| 2 | Datos de la API con `FutureBuilder` | Implementado (TCGdex API en español, imágenes reales, búsqueda y filtros) |
 | 3 | Navegación con paso de parámetros | Implementado |
 | 4 | Animaciones (`Hero` e implícitas) | Implementado |
 | 5 | Tabla en Supabase con RLS (CRUD) | Pendiente |

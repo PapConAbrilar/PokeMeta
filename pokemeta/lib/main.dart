@@ -5,17 +5,7 @@ import 'package:pokemeta/providers/decks_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(
-    // Los providers van POR ENCIMA de MaterialApp para que todas las
-    // pantallas (incluidas las que se abren con Navigator) los vean.
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => DecksProvider()),
-        ChangeNotifierProvider(create: (_) => ActiveDeckProvider()),
-      ],
-      child: const PokeMetaApp(),
-    ),
-  );
+  runApp(const PokeMetaApp());
 }
 
 class PokeMetaApp extends StatelessWidget {
@@ -23,10 +13,18 @@ class PokeMetaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PokeMeta',
-      theme: ThemeData(),
-      home: const LoginScreen(),
+    // Los providers van POR ENCIMA de MaterialApp para que todas las
+    // pantallas (incluidas las que se abren con Navigator) los vean.
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DecksProvider()),
+        ChangeNotifierProvider(create: (_) => ActiveDeckProvider()),
+      ],
+      child: MaterialApp(
+        title: 'PokeMeta',
+        theme: ThemeData(),
+        home: const LoginScreen(),
+      ),
     );
   }
 }
