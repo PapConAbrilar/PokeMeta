@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pokemeta/models/card_model.dart';
 import 'package:pokemeta/providers/active_deck_provider.dart';
-import 'package:pokemeta/widgets/card_image.dart';
 import 'package:pokemeta/widgets/custom_stat_row.dart';
+import 'package:pokemeta/widgets/interactive_3d_card.dart';
 import 'package:provider/provider.dart';
 
 /// Ahora es StatefulWidget porque guarda algo que cambia: si la carta
@@ -98,13 +98,28 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
               Center(
                 child: AspectRatio(
                   aspectRatio: 0.72,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: CardImage(card: card, iconSize: 72),
-                  ),
+                  child: Interactive3dCard(card: card),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.threed_rotation,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Arrastra la carta para inspeccionarla en 3D',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               Text(
                 '${card.expansion} · ${card.rarity}',
                 style: Theme.of(context).textTheme.labelLarge,
