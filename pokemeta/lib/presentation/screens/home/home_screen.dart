@@ -114,11 +114,21 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         const SizedBox(height: 24),
-        if (_selectedFeed == 0) ...[
-          _buildTournamentsFeed(),
-        ] else ...[
-          _buildCardsFeed(),
-        ],
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          layoutBuilder: (currentChild, previousChildren) => Stack(
+            alignment: Alignment.topCenter,
+            children: [...previousChildren, ?currentChild],
+          ),
+          child: KeyedSubtree(
+            key: ValueKey<int>(_selectedFeed),
+            child: _selectedFeed == 0
+                ? _buildTournamentsFeed()
+                : _buildCardsFeed(),
+          ),
+        ),
       ],
     );
   }
@@ -298,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSpacing: 12,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 0.72,
+              childAspectRatio: 0.78,
               children: [
                 for (final card in cards)
                   PokemonCardTile(
