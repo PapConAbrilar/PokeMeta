@@ -12,9 +12,14 @@ import 'package:provider/provider.dart';
 /// Detalle de un mazo guardado. Guarda el mazo mostrado en `_deck`
 /// porque puede cambiar al editarlo desde esta pantalla.
 class DeckDetailScreen extends StatefulWidget {
-  const DeckDetailScreen({super.key, required this.deck});
+  const DeckDetailScreen({
+    super.key,
+    required this.deck,
+    this.isTournamentDeck = false,
+  });
 
   final DeckModel deck;
+  final bool isTournamentDeck;
 
   @override
   State<DeckDetailScreen> createState() => _DeckDetailScreenState();
@@ -22,11 +27,36 @@ class DeckDetailScreen extends StatefulWidget {
 
 class _DeckDetailScreenState extends State<DeckDetailScreen> {
   late DeckModel _deck;
+  bool _savedFromTournament = false;
 
   @override
   void initState() {
     super.initState();
     _deck = widget.deck;
+  }
+
+  /// Guarda una copia de un mazo competitivo de torneo en la cuenta del usuario.
+  Future<void> _saveCopyToMyDecks() async {
+    final decks = context.read<DecksProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      await decks.add(_deck);
+      if (mounted) {
+        setState(() => _savedFromTournament = true);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Mazo "${_deck.name}" guardado en Mis Mazos'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Error al guardar el mazo: $e')),
+        );
+      }
+    }
   }
 
   /// Edita nombre, formato y descripción con el formulario.
@@ -119,15 +149,34 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              OutlinedButton.icon(
-                onPressed: _editData,
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Editar datos'),
-              ),
+              if (widget.isTournamentDeck)
+                FilledButton.icon(
+                  onPressed: _savedFromTournament ? null : _saveCopyToMyDecks,
+                  icon: Icon(
+                    _savedFromTournament
+                        ? Icons.check_circle_outline
+                        : Icons.bookmark_add_outlined,
+                  ),
+                  label: Text(
+                    _savedFromTournament
+                        ? 'Guardado en Mis Mazos'
+                        : 'Guardar en Mis Mazos',
+                  ),
+                ),
+              if (!widget.isTournamentDeck)
+                OutlinedButton.icon(
+                  onPressed: _editData,
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar datos'),
+                ),
               FilledButton.tonalIcon(
                 onPressed: _editCards,
                 icon: const Icon(Icons.style_outlined),
-                label: const Text('Editar cartas'),
+                label: Text(
+                  widget.isTournamentDeck
+                      ? 'Cargar en constructor'
+                      : 'Editar cartas',
+                ),
               ),
             ],
           ),
